@@ -1,8 +1,9 @@
 import PowerRegister from "../../../shared/domain/entities/powerRegister";
+import DefaultPowerValueObject from "../../../shared/domain/valueObjects/defaultPowerValueObject";
 import PowerRegisterResult from "../dto/powerRegisterResult";
 
 export default class ReplaceIncorrectValuesInPowerRegisters {
-    replaceIncorrectValues(originalRecords: Array<PowerRegisterResult>, defaultPowerValueToReplace: number): Array<PowerRegister> {
+    replaceIncorrectValues(originalRecords: Array<PowerRegisterResult>, defaultPowerValueToReplace: DefaultPowerValueObject): Array<PowerRegister> {
         if (originalRecords.length === 0)
             return []
 
@@ -14,7 +15,7 @@ export default class ReplaceIncorrectValuesInPowerRegisters {
             } else {
                 records.push({
                     name: originalRegister.wrongRegister?.name as string,
-                    power: defaultPowerValueToReplace,
+                    power: defaultPowerValueToReplace.value,
                     dateTime: new Date(originalRegister.wrongRegister?.dateTime as string),
                 })
             }

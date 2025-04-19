@@ -5,7 +5,7 @@ import IFileReaderAdapter from "../interfaces/IFileReaderAdapter";
 export default class PowerRegistersReader {
     constructor(private fileReaderAdapter: IFileReaderAdapter) {}
 
-    public async readPowerRegisters(filePath: string): Promise<ReadPowerRegistersResult> {
+    public async readPowerRegisters(filePath: string, skipFirstRow: boolean): Promise<ReadPowerRegistersResult> {
         if (!filePath)
             throw new Error('inputPath cannot be null or empty')
 
@@ -13,13 +13,25 @@ export default class PowerRegistersReader {
             const fileContent = await this.fileReaderAdapter.readFile(filePath)
             const lines = fileContent.split("\n")
             const records: Array<PowerRegisterResult> = []
-    
+            let isfirstRow = true
+
             for (const line of lines) {
+                if (isfirstRow) {
+                    isfirstRow = false
+
+                    if (skipFirstRow)
+                        continue
+                }
+
                 if (line.trim() === '')
                     continue
 
-                const [nameField, valueField, valueDate] = line.split(',')
+                let [nameField, valueField, valueDate] = line.split(',')
                 
+                nameField = nameField.trim()
+                valueField = valueField.trim()
+                valueDate = valueDate.trim()
+
                 if (this.areValidFields(nameField, valueField, valueDate)) {
                     records.push({
                         result: true,
@@ -45,12 +57,14 @@ export default class PowerRegistersReader {
     
             return {
                 result: true,
-                records
+                records,
+                message: ''
             }
         } catch(error: any) {
             return {
                 result: false,
-                records: []
+                records: [],
+                message: error.message || 'generic error message'
             }
         }        
     }

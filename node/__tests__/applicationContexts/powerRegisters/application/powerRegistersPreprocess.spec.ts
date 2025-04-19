@@ -1,5 +1,6 @@
 import PowerRegisterPreprocess from "../../../../src/applicationContexts/powerRegistersPreprocess/application/powerRegistersPreprocess"
 import PreProcessOptions from "../../../../src/applicationContexts/powerRegistersPreprocess/domain/dto/preProcessOptions"
+import DefaultPowerValueObject from "../../../../src/applicationContexts/shared/domain/valueObjects/defaultPowerValueObject"
 
 describe('[Application] Class PowerRegisterPreprocess', () => {
     test('Should returns empty array if input has no elements', () => {
@@ -10,7 +11,7 @@ describe('[Application] Class PowerRegisterPreprocess', () => {
         const result = service.preProcessRegisters({
             removeInvalidRegisters: false,
             replaceInvalidRegisters: false,
-            defaultPowerValueToBeReplaced: 0
+            defaultPowerValueToBeReplaced: new DefaultPowerValueObject(0)
         }, [])
 
         // Assert
@@ -25,7 +26,7 @@ describe('[Application] Class PowerRegisterPreprocess', () => {
         const options: PreProcessOptions = {
             removeInvalidRegisters: false,
             replaceInvalidRegisters: false,
-            defaultPowerValueToBeReplaced: 0
+            defaultPowerValueToBeReplaced: new DefaultPowerValueObject(0)
         }
         const result = service.preProcessRegisters(options, [{
             result: true,
@@ -63,7 +64,7 @@ describe('[Application] Class PowerRegisterPreprocess', () => {
         const options: PreProcessOptions = {
             removeInvalidRegisters: true,
             replaceInvalidRegisters: false,
-            defaultPowerValueToBeReplaced: 0
+            defaultPowerValueToBeReplaced: new DefaultPowerValueObject(0)
         }
         const result = service.preProcessRegisters(options, [{
             result: true,
@@ -98,7 +99,7 @@ describe('[Application] Class PowerRegisterPreprocess', () => {
         const options: PreProcessOptions = {
             removeInvalidRegisters: false,
             replaceInvalidRegisters: true,
-            defaultPowerValueToBeReplaced: 0
+            defaultPowerValueToBeReplaced: new DefaultPowerValueObject(0)
         }
         const result = service.preProcessRegisters(options, [{
             result: true,
@@ -136,7 +137,7 @@ describe('[Application] Class PowerRegisterPreprocess', () => {
         const options: PreProcessOptions = {
             removeInvalidRegisters: false,
             replaceInvalidRegisters: false,
-            defaultPowerValueToBeReplaced: 0
+            defaultPowerValueToBeReplaced: new DefaultPowerValueObject(0)
         }
         const result = service.preProcessRegisters(options, [{
             result: true,

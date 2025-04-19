@@ -1,14 +1,33 @@
 import yargs from 'yargs/yargs'
 import { hideBin } from 'yargs/helpers'
 import Application from "./application/application";
-import ApplicationInputOptions from "./application/applicationInputOptions";
+import ApplicationInputOptions from "./applicationContexts/shared/domain/dto/applicationInputOptions";
 import PeriodInMinutesValueObject from "./applicationContexts/shared/domain/valueObjects/periodInMinutesValueObject";
+import PowerRegisterReader from './applicationContexts/powerRegistersPreprocess/application/powerRegisterReader';
+import PowerRegisterPreprocess from './applicationContexts/powerRegistersPreprocess/application/powerRegistersPreprocess';
+import { FileReaderAdapter } from './applicationContexts/powerRegistersPreprocess/infrastructure/file/fileReaderAdapter';
+import PowerRegistersProcess from './applicationContexts/powerRegistersProcess/application/powerRegistersProcess';
+import ConsoleLogger from './applicationContexts/shared/infrastructure/consoleLogger';
+import PowerRegistersExporter from './applicationContexts/powerRegistersExport/application/powerRegistersExported';
+import InputOptionsBuilder from './applicationContexts/powerRegistersPreprocess/domain/services/inputOptionsBuilder';
+import ApplicationInputFromComandLine from './applicationContexts/shared/domain/dto/applicationInputFromComandLine';
 
 const argv: any = yargs(hideBin(process.argv))
-  .option('file', {
-    alias: 'f',
+  .option('input', {
+    alias: 'in',
     type: 'string',
     description: 'Input file full path',
+  })
+  .option('output', {
+    alias: 'out',
+    type: 'string',
+    description: 'Input file full path',
+  })
+  .option('skipfirst', {
+    alias: 's',
+    type: 'boolean',
+    description: 'Skip the first row of the input file',
+    default: false
   })
   .option('remove', {
     alias: 'r',
@@ -36,31 +55,38 @@ const argv: any = yargs(hideBin(process.argv))
   })
   .option('fill', {
     alias: 'f',
-    type: 'number',
+    type: 'string',
     description: 'Fill gaps',
-    default: false
+    default: 'disabled'
   })
-  .demandOption(['file'])
+  .demandOption(['input', 'output'])
   .help()
-  .argv;
+  .argv
 
-console.log(`File: ${argv.file}, remove: ${argv.remove}, replace: ${argv.replace}, default: ${argv.default}, interval: ${argv.interval}, fill: ${argv.fill}`)
+console.log(`Input: ${argv.input}, Output: ${argv.input}, skip_first: ${argv.skipfirst}, remove: ${argv.remove}, replace: ${argv.replace}, default: ${argv.default}, interval: ${argv.interval}, fill: ${argv.fill}`)
 
-const periodInMinutes = 15
-const applicationInputOptions: ApplicationInputOptions = {
-    powerRegistersFilePath: argv.file,
-    preProcessOptions: {
-        defaultPowerValueToBeReplaced: argv.default,
-        removeInvalidRegisters: argv.remove,
-        replaceInvalidRegisters: argv.replace
-    },
-    processOptions: {
-        fillGaps: argv.fill,
-        periodInMinutes: new PeriodInMinutesValueObject(argv.interval)
-    }
+try {
+  const applicationInputFromCommandLine: ApplicationInputFromComandLine = {
+    inputFilePath: argv.input,
+    outputFilePath: argv.output,
+    skipFirstRowFromInputFile: argv.skipfirst || false,
+    defaultPowerValue: argv.default,
+    removeInvalidRegisters: argv.remove,
+    replaceInvalidRegisters: argv.replace,
+    fillGaps: argv.fill,
+    periodInMinutes: argv.interval
+  }
+
+  const logger = new ConsoleLogger()
+  const inputOptionsBuilder = new InputOptionsBuilder()
+  const powerRegisterReader = new PowerRegisterReader(new FileReaderAdapter())
+  const powerRegisterPreprocess = new PowerRegisterPreprocess()
+  const powerRegistersProcess = new PowerRegistersProcess()
+  const powerRegistersExporter = new PowerRegistersExporter()
+  const applicationInputOptions = inputOptionsBuilder.build(applicationInputFromCommandLine)
+
+  const application = new Application(powerRegisterReader, powerRegisterPreprocess, powerRegistersProcess, powerRegistersExporter, logger)
+  application.invoke(applicationInputOptions)
+} catch (error: any) {
+  console.log(`Application error: ${error?.message}`)
 }
-
-console.log(applicationInputOptions)
-
-// const application = new Application()
-// application.invoke(applicationInputOptions)

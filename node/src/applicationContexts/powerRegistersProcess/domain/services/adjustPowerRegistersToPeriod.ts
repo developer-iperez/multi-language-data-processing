@@ -14,6 +14,9 @@ export default class AdjustPowerRegistersToPeriod {
         const powerRegisterGroupedByPeriod: Array<PowerRegister> = []
 
         powerRegisters.forEach((powerRegister) => {
+            if (!this.isValidDate(powerRegister.dateTime))
+                return
+
             const roundedDate = this.roundDateToPeriod(powerRegister.dateTime, period)
             const key = roundedDate.toISOString()
 
@@ -41,5 +44,9 @@ export default class AdjustPowerRegistersToPeriod {
 
         roundedDate.setMinutes(roundedMinutes, 0, 0)        
         return roundedDate
+    }
+
+    private isValidDate(date: Date) {
+        return date instanceof Date && !isNaN(date.getMilliseconds())
     }
 }

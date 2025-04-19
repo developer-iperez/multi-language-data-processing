@@ -1,4 +1,5 @@
 import ReplaceIncorrectValuesInPowerRegisters from "../../../../../src/applicationContexts/powerRegistersPreprocess/domain/services/replaceIncorrectValuesInPowerRegisters"
+import DefaultPowerValueObject from "../../../../../src/applicationContexts/shared/domain/valueObjects/defaultPowerValueObject"
 
 describe('[Domain] Class ReplaceIncorrectValuesInPowerRegisters', () => {
     test('Should returns Empty array if the method receives no records', () => {
@@ -6,7 +7,7 @@ describe('[Domain] Class ReplaceIncorrectValuesInPowerRegisters', () => {
         const service = new ReplaceIncorrectValuesInPowerRegisters()
         
         // Act
-        const result = service.replaceIncorrectValues([], 0)
+        const result = service.replaceIncorrectValues([], new DefaultPowerValueObject(0))
 
         // Assert
         expect(result).not.toBeNull()
@@ -18,7 +19,7 @@ describe('[Domain] Class ReplaceIncorrectValuesInPowerRegisters', () => {
         const service = new ReplaceIncorrectValuesInPowerRegisters()
         
         // Act
-        const defaultPowerValueToReplace = 0
+        const defaultPowerValueToReplace = new DefaultPowerValueObject(0)
         const result = service.replaceIncorrectValues([{
             result: false,
             register: null,
@@ -34,7 +35,7 @@ describe('[Domain] Class ReplaceIncorrectValuesInPowerRegisters', () => {
         expect(result.length).toBe(1)
         expect(result[0]).not.toBeNull()
         expect(result[0].name).toBe('DEVICE_1')
-        expect(result[0].power).toBe(defaultPowerValueToReplace)
+        expect(result[0].power).toBe(defaultPowerValueToReplace.value)
         expect(result[0].dateTime).toStrictEqual(new Date('2024-10-21T05:45:01.583Z'))
     })
 })

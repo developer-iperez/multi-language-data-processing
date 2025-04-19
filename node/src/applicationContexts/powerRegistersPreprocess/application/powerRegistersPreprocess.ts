@@ -23,6 +23,7 @@ export default class PowerRegisterPreprocess implements IPowerRegisterPreprocess
         }
 
         const service = new PowerRegistersSort()
+        //TODO: cambiar el nombre del método para hacerlo más entendible
         records = service.sort(records)
 
         return records

@@ -11,7 +11,7 @@ describe('[Domain] Class PowerRegistersReader', () => {
 
         // Act
         // Assert
-        await expect(() => service.readPowerRegisters('')).rejects.toThrow('inputPath cannot be null or empty')
+        await expect(() => service.readPowerRegisters('', false)).rejects.toThrow('inputPath cannot be null or empty')
     })
 
     test('Should returns result as false if it procude any internal exception', async () => {
@@ -20,7 +20,7 @@ describe('[Domain] Class PowerRegistersReader', () => {
         fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).throwsAsync(new Error('Exception from test'))
         
         // Act
-        const result = await service.readPowerRegisters("file")
+        const result = await service.readPowerRegisters("file", false)
 
         // Assert
         expect(result.result).toBeFalsy()
@@ -33,7 +33,7 @@ describe('[Domain] Class PowerRegistersReader', () => {
         fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).returnsAsync('')
         
         // Act
-        const result = await service.readPowerRegisters("file")
+        const result = await service.readPowerRegisters("file", false)
 
         // Assert
         expect(result.result).toBeTruthy()
@@ -43,10 +43,10 @@ describe('[Domain] Class PowerRegistersReader', () => {
     test('Should returns result as true and single wrong record if the file contents a single invalid register (power value)', async () => {
         // Arrange
         const service = new PowerRegistersReader(fileReaderAdapterMock.object())
-        fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).returnsAsync('reg-1,value,2024-10-10T00:00:00Z')
+        fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).returnsAsync(`reg-1,value,2024-10-10T00:00:00Z`)
         
         // Act
-        const result = await service.readPowerRegisters('file')
+        const result = await service.readPowerRegisters('file', false)
 
         // Assert
         expect(result.result).toBeTruthy()
@@ -62,10 +62,10 @@ describe('[Domain] Class PowerRegistersReader', () => {
     test('Should returns result as true and single wrong record if the file contents a single invalid register (dateTime)', async () => {
         // Arrange
         const service = new PowerRegistersReader(fileReaderAdapterMock.object())
-        fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).returnsAsync('reg-1,123.4,invalid-date-time-format')
+        fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).returnsAsync(`reg-1,123.4,invalid-date-time-format`)
         
         // Act
-        const result = await service.readPowerRegisters('file')
+        const result = await service.readPowerRegisters('file', false)
 
         // Assert
         expect(result.result).toBeTruthy()
@@ -81,10 +81,30 @@ describe('[Domain] Class PowerRegistersReader', () => {
     test('Should returns result as true and single valid record if the file contents a single valid register', async () => {
         // Arrange
         const service = new PowerRegistersReader(fileReaderAdapterMock.object())
-        fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).returnsAsync('reg-1,123.4,2024-10-10T00:00:00Z')
+        fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).returnsAsync(`reg-1,123.4,2024-10-10T00:00:00Z`)
         
         // Act
-        const result = await service.readPowerRegisters('file')
+        const result = await service.readPowerRegisters('file', false)
+
+        // Assert
+        expect(result.result).toBeTruthy()
+        expect(result.records.length).toBe(1)
+        expect(result.records[0].result).toBeTruthy()
+        expect(result.records[0].register).not.toBeNull()
+        expect(result.records[0].register?.name).toBe('reg-1')
+        expect(result.records[0].register?.power).toBe(123.4)
+        expect(result.records[0].register?.dateTime).toStrictEqual(new Date('2024-10-10T00:00:00Z'))
+        expect(result.records[0].wrongRegister).toBeNull()
+    })
+
+    test('Should returns result as true and single valid record if the file contents a row with title and another row with a valid register', async () => {
+        // Arrange
+        const service = new PowerRegistersReader(fileReaderAdapterMock.object())
+        fileReaderAdapterMock.setup(x => x.readFile(It.IsAny<string>())).returnsAsync(`device,power,date
+            reg-1,123.4,2024-10-10T00:00:00Z`)
+        
+        // Act
+        const result = await service.readPowerRegisters('file', true)
 
         // Assert
         expect(result.result).toBeTruthy()

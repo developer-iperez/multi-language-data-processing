@@ -14,7 +14,15 @@
             // ],
             "program": "${workspaceFolder}/src/index.ts",
             "preLaunchTask": "tsc: build - tsconfig.json",
-            "args": ["--file", "file"],
+            "args": [
+                "--file", ".\\..\\data\\data1.csv", 
+                "--skipfirst", "true",
+                "--remove", "false",
+                "--replace", "true",
+                "--default", "0",
+                "--interval", "60",
+                
+            ],
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
             ],

@@ -11,12 +11,8 @@ export default class PowerRegisterReader implements IPowerRegisterReader {
         this.powerRegistersReader = new PowerRegistersReader(this.fileReaderAdapter)
     }
 
-    async readPowerRegisters(filePath: string): Promise<{ registers?: ReadPowerRegistersResult, error?: string }> {
-        try {
-            const registers = await this.powerRegistersReader.readPowerRegisters(filePath)
-            return { registers }
-        } catch (error: any) {
-            return { error: error.message }
-        }
+    async readPowerRegisters(filePath: string, skipFirstRow: boolean): Promise<ReadPowerRegistersResult> {
+        const readRegistersResult = await this.powerRegistersReader.readPowerRegisters(filePath, skipFirstRow)
+        return readRegistersResult
     }
 }
